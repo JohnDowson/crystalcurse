@@ -1,0 +1,17 @@
+name: crystalcurse
+version: 0.1.0
+
+authors:
+  - Ivan Chinenov <ichinenov@gmail.com>
+
+targets:
+  crystalcurse:
+    main: src/crystalcurse.cr
+
+dependencies:
+  ncurses:
+    github: SamualLB/ncurses
+
+crystal: 0.30.1
+
+license: MIT
