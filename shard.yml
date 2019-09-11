@@ -10,8 +10,8 @@ targets:
 
 dependencies:
   ncurses:
-    github: SamualLB/ncurses
-
+    github: JohnDowson/ncurses
+    branch: borders_and_lines
 crystal: 0.30.1
 
 license: MIT
