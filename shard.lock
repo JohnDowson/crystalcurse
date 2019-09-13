@@ -1,0 +1,6 @@
+version: 1.0
+shards:
+  ncurses:
+    github: JohnDowson/ncurses
+    commit: d0e46f673b6a443255269ce610d598a0fdc7d159
+
