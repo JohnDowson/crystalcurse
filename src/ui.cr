@@ -2,18 +2,18 @@ require "ncurses"
 require "logger"
 module CyrseUI
   NULL_CHAR = '\u0000'
+  Log = Logger.new(File.new("/home/johnd/crystalcurse/window.log", "w"))
 
   class Window
     getter window : NCurses::Window
-    def initialize(xsize : Int, ysize : Int, x : Int, y : Int)
+    def initialize(name : String, xsize : Int, ysize : Int, x : Int, y : Int)
       @window = NCurses::Window.new(xsize, ysize, x, y)
       @title_enabled = false
-      @title = ""
+      @title = "#{name}"
       @status_enabled = false
-      @status = ""
+      @status = "#{xsize}, #{ysize}"
       @border_enabled = false
       @border_style = NULL_CHAR
-      @Log = Logger.new(File.new("/home/johnd/crystalcurse/window.log", "w"))
     end
 
     def delete
@@ -64,8 +64,8 @@ module CyrseUI
     def refresh(&block)
       ysize = @window.max_x
       xsize = @window.max_y
-      @Log.info "border: #{@border_style.to_s} #{border_enabled?} title: #{@title.to_s} #{title_enabled?} status: #{@status} #{status_enabled?}", "window"
-      @Log.info "x here #{xsize.to_s} y here #{ysize.to_s} forom curses x #{NCurses.height} from curses y  #{NCurses.width}"
+      Log.info "border: #{@border_style.to_s} #{border_enabled?} title: #{@title.to_s} #{title_enabled?} status: #{@status} #{status_enabled?}", "window"
+      Log.info "x here #{xsize.to_s} y here #{ysize.to_s} forom curses x #{NCurses.height} from curses y  #{NCurses.width}", "window"
       @window.clear
       if border_enabled?
         @window.box(@border_style, @border_style)
@@ -92,21 +92,28 @@ module CyrseUI
   end
 
   class UI
-
-    getter windows = {} of Symbol => Window
-
+    
     def initialize 
       NCurses.start
       NCurses.cbreak
       NCurses.no_echo
+      @windows = {} of Symbol => Window
     end
 
-    def add_window(identifier : Symbol, xsize : Int, ysize : Int, x : Int, y : Int)
-      @windows[identifier] = Window.new(xsize, ysize, x, y)
+    def add_window(name : Symbol, xsize : Int, ysize : Int, x : Int, y : Int)
+      @windows[name] = Window.new(name.to_s, xsize, ysize, x, y)
     end
-  
-    def remove_window(identifier : Symbol)
-      @windows[identifier].delete
+
+    def window(name : Symbol)
+      return @windows[name]
+    end
+    
+    def window(name : Symbol, &block : Window -> Bool | Nil)
+      yield @windows[name]
+    end
+
+    def remove_window(name : Symbol)
+      @windows[name].delete
     end
 
     def refresh
