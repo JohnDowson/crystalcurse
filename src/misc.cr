@@ -1,4 +1,6 @@
 module LibMisc
+  class EntityError < Exception; end
+
   class Map
     property xsize, ysize : Int32
     property tiles
@@ -22,11 +24,8 @@ module LibMisc
     end
 
     def in_bounds?(map : Map) : Bool
-      if @x <= map.xsize && @y <= map.ysize
-        true
-      else 
-        false
-      end
+      return true if @x <= map.xsize && @y <= map.ysize
+      false
     end
 
     def_hash @x, @y
@@ -35,13 +34,16 @@ module LibMisc
   class Entity
     @x = 0
     @y = 0
+    def initialize(name : String, x : Int32, y : Int32, map : LibMisc::Map)
+      initialize(name, Point.new(x, y), map)
+    end
     def initialize(name : String, coord : LibMisc::Point, map : LibMisc::Map)
       if coord.in_bounds? map 
         @name = name
         @x = coord.x
         @y = coord.y
       else
-        raise "Can't create entity outside of map bounds!"
+        raise EntityError.new "Can't create an entity outside of map bounds!"
       end
     end
   end

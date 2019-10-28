@@ -1,3 +1,5 @@
 require "./misc"
-class Player < LibMisc::Entity
+module Entity
+  class Player < LibMisc::Entity
+  end
 end

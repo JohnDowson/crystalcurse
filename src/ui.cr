@@ -3,7 +3,7 @@ require "logger"
 module CyrseUI
   NULL_CHAR = '\u0000'
   Log = Logger.new(File.new("/home/johnd/crystalcurse/window.log", "w"))
-
+  alias InputEvent = (LibNCurses::Key | NCurses::MouseEvent | Char | Nil)
   class Window
     getter window : NCurses::Window
     def initialize(name : String, xsize : Int, ysize : Int, x : Int, y : Int)
@@ -64,8 +64,7 @@ module CyrseUI
     def refresh(&block)
       ysize = @window.max_x
       xsize = @window.max_y
-      Log.info "border: #{@border_style.to_s} #{border_enabled?} title: #{@title.to_s} #{title_enabled?} status: #{@status} #{status_enabled?}", "window"
-      Log.info "x here #{xsize.to_s} y here #{ysize.to_s} forom curses x #{NCurses.height} from curses y  #{NCurses.width}", "window"
+      Log.debug "#{self.inspect}"
       @window.clear
       if border_enabled?
         @window.box(@border_style, @border_style)
@@ -80,7 +79,17 @@ module CyrseUI
       
       @window.refresh
     end
+
+    def print(s : String, x : Int32, y : Int32)
+      window.print(s, y, x)
+    end
     
+    def get_input : InputEvent
+      i = window.get_char
+      NCurses.get_mouse if i == NCurses::Key::Mouse
+      i
+    end
+
     def ysize
       @window.max_y
     end
@@ -93,15 +102,29 @@ module CyrseUI
 
   class UI
     
+    property mode
+    property ncurses_state = {} of Symbol => Bool
     def initialize 
       NCurses.start
       NCurses.cbreak
       NCurses.no_echo
       @windows = {} of Symbol => Window
     end
+    
+    def set_mode(s)
+      #TODO
+    end
 
     def add_window(name : Symbol, xsize : Int, ysize : Int, x : Int, y : Int)
       @windows[name] = Window.new(name.to_s, xsize, ysize, x, y)
+    end
+
+    def add_window(name : Symbol,
+                   xsize : Int, ysize : Int,
+                   x : Int, y : Int,
+                   &block : Window -> Bool | Nil)
+      @windows[name] = Window.new(name.to_s, xsize, ysize, x, y)
+      yield @windows[name]
     end
 
     def window(name : Symbol)
@@ -120,5 +143,14 @@ module CyrseUI
       @windows.each { |w| w.refresh }
     end
 
+  end
+
+  class Button
+    #TODO: 
+    # @window - parent window
+    # @position - position on screen
+    # @position_rel - position on parent window
+    # ?? @action - callback when clicked?
+    # Not sure if callbacks are a good practice
   end
 end
